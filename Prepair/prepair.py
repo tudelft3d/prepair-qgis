@@ -54,6 +54,7 @@ class Prepair:
         # Create the dialog (after translation) and keep reference
         self.dlg = PrepairDialog()
 
+
     def initGui(self):
         # Create action that will start plugin configuration
         self.action = QAction(
@@ -75,18 +76,38 @@ class Prepair:
         dirname = os.path.dirname(path)
         return os.path.exists(dirname)
 
-
-
     # run method that performs all the real work
     def run(self):
         # show the dialog
         self.dlg.show()
+        
+        #-- stuff for selecting the proper layer
+        # print str(self.iface.mapCanvas().currentLayer().name())
+        layers = self.iface.mapCanvas().layers()
+        polyl = []
+        self.dlg.comboLayers.clear()
+        curlayer = 0
+        alll = 0 #-- to keep track of all layers
+        for l in layers:
+            if (l.type() == 0) and (l.geometryType() == 2): # if vector && polygon 
+                polyl.append((l.name(), alll))
+                if (l == self.iface.mapCanvas().currentLayer()):
+                    curlayer = len(polyl)-1
+            alll += 1
+        for l in polyl:
+            self.dlg.comboLayers.addItem(l[0])
+        self.dlg.comboLayers.setCurrentIndex(curlayer)
+
+
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
         if result == 1:
             mw = self.iface.mainWindow()
             path = self.dlg.filename.text()
+            #-- get selected layer by the user
+            # print "selected layer", polyl[self.dlg.comboLayers.currentIndex()]
+            selectedLayer = self.iface.mapCanvas().layer(polyl[self.dlg.comboLayers.currentIndex()][1])
             #-- verify output path can be created
             if (self.verifypath(path) == False):
                 QMessageBox.critical(mw, "prepair", "Non-valid output file.")
@@ -103,21 +124,17 @@ class Prepair:
 
             #-- repair paradigm
             if (self.dlg.onlySelected.isChecked() == True):
-                print "only selected"
-                fs = self.iface.mapCanvas().currentLayer().selectedFeatures()
+                # print "only selected"
+                fs = selectedLayer.selectedFeatures()
             else:
-                print "all features"
-                fs = self.iface.mapCanvas().currentLayer().getFeatures()
-            #-- stuff for selecting the proper layer
-            # print str(self.iface.mapCanvas().currentLayer().name())
-            # layers = self.iface.mapCanvas().layers()
-            # for l in layers:
-                # print "layer:", l.name()
+                # print "all features"
+                fs = selectedLayer.getFeatures()
             invalid = 0
             features = list(fs)
             writer = QgsVectorFileWriter(path, "CP1250", features[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
             if writer.hasError() != QgsVectorFileWriter.NoError:
-                print "Error when creating shapefile: ", writer.hasError()
+                QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
+                return 1
             for f in features:
                 if (f.geometry().isGeosValid() == True):
                     # TODO : add orientation test
@@ -125,11 +142,12 @@ class Prepair:
                 else:
                     invalid += 1
                     cmd = []
-                    cmd.append("/Users/hugo/projects/prepair-github/prepair")
+                    # cmd.append("/Users/hugo/projects/prepair/prepair-github/prepair")
+                    cmd.append("prepair")
                     cmd.append("--wkt")
                     cmd.append(f.geometry().exportToWkt())
                     if (self.dlg.radioOddEven.isChecked() == False):
-                        print "--- setdiff repair"
+                        # print "--- setdiff repair"
                         cmd.append("--setdiff")
                     if (minarea > 0.0):
                         print "--- minarea:", minarea
@@ -139,10 +157,9 @@ class Prepair:
                     wkt2 = p.stdout.read()
                     p.terminate()
                     geom2 = QgsGeometry.fromWkt(wkt2)
-                    # print "multi:", geom2.isMultipart()
                     if (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
                         f.setGeometry(geom2)
                         writer.addFeature(f)
-            print "no invalid polygons:", invalid
+            print "no invalid polygons repaired:", invalid
             del writer
             qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
