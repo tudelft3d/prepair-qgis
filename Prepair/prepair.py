@@ -73,7 +73,8 @@ class Prepair:
 
     def verifypath(self, path):
         dirname = os.path.dirname(path)
-        print "exists?", os.path.exists(dirname)
+        return os.path.exists(dirname)
+
 
 
     # run method that performs all the real work
@@ -86,58 +87,62 @@ class Prepair:
         if result == 1:
             mw = self.iface.mainWindow()
             path = self.dlg.filename.text()
+            #-- verify output path can be created
             if (self.verifypath(path) == False):
-                QMessageBox.information(mw, "prepair", "Non-valid output file.")
+                QMessageBox.critical(mw, "prepair", "Non-valid output file.")
+                return 1
+            #-- verify that minarea is a number>=0
+            try:
+                minarea = float(self.dlg.minarea.text())
+                if (minarea < 0.0):
+                    QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
+                    return 1
+            except:
+                QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
+                return 1
+
+            #-- repair paradigm
+            if (self.dlg.onlySelected.isChecked() == True):
+                print "only selected"
+                fs = self.iface.mapCanvas().currentLayer().selectedFeatures()
             else:
-                if (self.dlg.onlySelected.isChecked() == True):
-                    print "only selected"
-                    fs = self.iface.mapCanvas().currentLayer().selectedFeatures()
+                print "all features"
+                fs = self.iface.mapCanvas().currentLayer().getFeatures()
+            #-- stuff for selecting the proper layer
+            # print str(self.iface.mapCanvas().currentLayer().name())
+            # layers = self.iface.mapCanvas().layers()
+            # for l in layers:
+                # print "layer:", l.name()
+            invalid = 0
+            features = list(fs)
+            writer = QgsVectorFileWriter(path, "CP1250", features[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
+            if writer.hasError() != QgsVectorFileWriter.NoError:
+                print "Error when creating shapefile: ", writer.hasError()
+            for f in features:
+                if (f.geometry().isGeosValid() == True):
+                    # TODO : add orientation test
+                    writer.addFeature(f)
                 else:
-                    print "all features"
-                    fs = self.iface.mapCanvas().currentLayer().getFeatures()
-                invalid = 0
-                # print str(self.iface.mapCanvas().currentLayer().displayField())
-                ls = list(fs)
-                # print path, ls[0].fields
-                writer = QgsVectorFileWriter(path, "CP1250", ls[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
-                if writer.hasError() != QgsVectorFileWriter.NoError:
-                    print "Error when creating shapefile: ", writer.hasError()
-                for f in ls:
-                    if (f.geometry().isGeosValid() == True):
+                    invalid += 1
+                    cmd = []
+                    cmd.append("/Users/hugo/projects/prepair-github/prepair")
+                    cmd.append("--wkt")
+                    cmd.append(f.geometry().exportToWkt())
+                    if (self.dlg.radioOddEven.isChecked() == False):
+                        print "--- setdiff repair"
+                        cmd.append("--setdiff")
+                    if (minarea > 0.0):
+                        print "--- minarea:", minarea
+                        cmd.append("--minarea")
+                        cmd.append(str(minarea))
+                    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                    wkt2 = p.stdout.read()
+                    p.terminate()
+                    geom2 = QgsGeometry.fromWkt(wkt2)
+                    # print "multi:", geom2.isMultipart()
+                    if (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
+                        f.setGeometry(geom2)
                         writer.addFeature(f)
-                    else:
-                        invalid += 1
-                        wkt = f.geometry().exportToWkt()
-                        # print wkt
-                        if (self.dlg.radioOddEven.isChecked() == True):
-                            print "oddeven repair"
-                            cmd = []
-                            cmd.append("/Users/hugo/projects/prepair-github/prepair")
-                            cmd.append("--wkt")
-                            # cmd.append('POLYGON((0 0, 0 10, 10 0, 10 10, 0 0))')
-                            cmd.append(wkt)
-                            p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                            # p.wait()
-                            wkt2 = p.stdout.read()
-                            p.terminate()
-                            newgeom = QgsGeometry.fromWkt(wkt2)
-                            print "multi:", newgeom.isMultipart()
-                            f.setGeometry(newgeom)
-                            writer.addFeature(f)
-                            # lsArgs = ['--wkt']
-                            # lsArgs.append(wkt)
-                            # lsArgs.append('POLYGON((0 0, 0 10, 10 0, 10 10, 0 0))')
-                            # print lsArgs
-                            # self.process.start('/Users/hugo/projects/prepair/prepair-github/prepair', lsArgs, QIODevice.ReadOnly)
-                            # msg = str(self.process.readAllStandardError())
-                            # print "msg:", msg
-                            # if msg == '':
-                                # msg = str(self.process.readAllStandardOutput())
-                                # outMessages = str(self.process.readAllStandardOutput()).splitlines()
-                                # print outMessages
-                            # self.process.kill()
-                        else:
-                            print "setdiff repair"
-                print "no invalid polygons:", invalid
-                del writer
-                qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
+            print "no invalid polygons:", invalid
+            del writer
+            qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
