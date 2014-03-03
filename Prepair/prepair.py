@@ -142,7 +142,6 @@ class Prepair:
                 else:
                     invalid += 1
                     cmd = []
-                    # cmd.append("/Users/hugo/projects/prepair/prepair-github/prepair")
                     cmd.append("prepair")
                     cmd.append("--wkt")
                     cmd.append(f.geometry().exportToWkt())
