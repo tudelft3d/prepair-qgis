@@ -138,6 +138,9 @@ class Prepair:
             for f in features:
                 if (f.geometry().isGeosValid() == True):
                     # TODO : add orientation test
+                    # print "--- GEOS stuff ---"
+                    # gg = f.geometry().asGeos() #-- not exposed in Python
+                    # print gg.exterior()
                     writer.addFeature(f)
                 else:
                     invalid += 1
