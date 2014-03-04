@@ -12,9 +12,9 @@
 name=prepair
 qgisMinimumVersion=2.0
 description=Automatic repair of single polygons
-version=0.1
+version=0.2
 author=GIS technology group at TU Delft
-email=https://github.com/tudelft-gist
+email=h.ledoux@tudelft.nl
 
 # end of mandatory metadata
 

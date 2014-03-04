@@ -136,32 +136,23 @@ class Prepair:
                 QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
                 return 1
             for f in features:
-                if (f.geometry().isGeosValid() == True):
-                    # TODO : add orientation test
-                    # print "--- GEOS stuff ---"
-                    # gg = f.geometry().asGeos() #-- not exposed in Python
-                    # print gg.exterior()
+                cmd = []
+                cmd.append("prepair")
+                cmd.append("--wkt")
+                cmd.append(f.geometry().exportToWkt())
+                if (self.dlg.radioOddEven.isChecked() == False):
+                    cmd.append("--setdiff")
+                if (minarea > 0.0):
+                    cmd.append("--minarea")
+                    cmd.append(str(minarea))
+                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                wkt2 = p.stdout.read()
+                p.terminate()
+                geom2 = QgsGeometry.fromWkt(wkt2)
+                if (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
+                    f.setGeometry(geom2)
                     writer.addFeature(f)
                 else:
-                    invalid += 1
-                    cmd = []
-                    cmd.append("prepair")
-                    cmd.append("--wkt")
-                    cmd.append(f.geometry().exportToWkt())
-                    if (self.dlg.radioOddEven.isChecked() == False):
-                        # print "--- setdiff repair"
-                        cmd.append("--setdiff")
-                    if (minarea > 0.0):
-                        print "--- minarea:", minarea
-                        cmd.append("--minarea")
-                        cmd.append(str(minarea))
-                    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                    wkt2 = p.stdout.read()
-                    p.terminate()
-                    geom2 = QgsGeometry.fromWkt(wkt2)
-                    if (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
-                        f.setGeometry(geom2)
-                        writer.addFeature(f)
-            print "no invalid polygons repaired:", invalid
+                    print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
             del writer
             qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
