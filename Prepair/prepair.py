@@ -147,7 +147,7 @@ class Prepair:
                 wkt2 = p.stdout.read()
                 p.terminate()
                 geom2 = QgsGeometry.fromWkt(wkt2)
-                if (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
+                if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
                     f.setGeometry(geom2)
                     writer.addFeature(f)
                 else:
