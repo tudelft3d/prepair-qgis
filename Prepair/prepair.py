@@ -76,13 +76,9 @@ class Prepair:
         dirname = os.path.dirname(path)
         return os.path.exists(dirname)
 
-    # run method that performs all the real work
     def run(self):
-        # show the dialog
         self.dlg.show()
-        
         #-- stuff for selecting the proper layer
-        # print str(self.iface.mapCanvas().currentLayer().name())
         layers = self.iface.mapCanvas().layers()
         polyl = []
         self.dlg.comboLayers.clear()
@@ -98,7 +94,6 @@ class Prepair:
             self.dlg.comboLayers.addItem(l[0])
         self.dlg.comboLayers.setCurrentIndex(curlayer)
 
-
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
@@ -107,7 +102,9 @@ class Prepair:
             path = self.dlg.filename.text()
             #-- get selected layer by the user
             # print "selected layer", polyl[self.dlg.comboLayers.currentIndex()]
-            selectedLayer = self.iface.mapCanvas().layer(polyl[self.dlg.comboLayers.currentIndex()][1])
+            if (self.dlg.comboLayers.currentIndex() == -1):
+                QMessageBox.critical(mw, "prepair", "No layer selected.")
+                return 1
             #-- verify output path can be created
             if (self.verifypath(path) == False):
                 QMessageBox.critical(mw, "prepair", "Non-valid output file.")
@@ -123,6 +120,7 @@ class Prepair:
                 return 1
 
             #-- repair paradigm
+            selectedLayer = self.iface.mapCanvas().layer(polyl[self.dlg.comboLayers.currentIndex()][1])
             if (self.dlg.onlySelected.isChecked() == True):
                 # print "only selected"
                 fs = selectedLayer.selectedFeatures()
