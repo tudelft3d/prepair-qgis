@@ -44,6 +44,8 @@ class Prepair:
         locale = QSettings().value("locale/userLocale")[0:2]
         localePath = os.path.join(self.plugin_dir, 'i18n', 'prepair_{}.qm'.format(locale))
 
+        self.process = QProcess(iface)
+
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
@@ -134,23 +136,34 @@ class Prepair:
                 QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
                 return 1
             for f in features:
-                cmd = []
-                cmd.append("prepair")
-                cmd.append("--wkt")
-                cmd.append(f.geometry().exportToWkt())
-                if (self.dlg.radioOddEven.isChecked() == False):
-                    cmd.append("--setdiff")
-                if (minarea > 0.0):
-                    cmd.append("--minarea")
-                    cmd.append(str(minarea))
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                wkt2 = p.stdout.read()
-                p.terminate()
-                geom2 = QgsGeometry.fromWkt(wkt2)
-                if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
-                    f.setGeometry(geom2)
-                    writer.addFeature(f)
-                else:
-                    print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
+                # cmd = []
+                # cmd.append("prepair")
+                # cmd.append("--wkt")
+                # cmd.append(f.geometry().exportToWkt())
+                # if (self.dlg.radioOddEven.isChecked() == False):
+                #     cmd.append("--setdiff")
+                # if (minarea > 0.0):
+                #     cmd.append("--minarea")
+                #     cmd.append(str(minarea))
+                # p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
+                # wkt2 = p.stdout.read()
+                # p.terminate()
+                lsArgs = ['--wkt']
+                lsArgs.append('POLYGON((0 0, 0 10, 10 0, 10 10, 0 0))')
+                self.process.start('/Users/hugo/projects/prepair-github/prepair', lsArgs)
+                self.process.waitForFinished()
+                msg = str(self.process.readAllStandardError())
+                print "msg:", msg
+                if msg == '':
+                    # msg = str(self.process.readAllStandardOutput())
+                    outMessages = str(self.process.readAllStandardOutput()).splitlines()
+                    print outMessages
+                self.process.kill()
+                # geom2 = QgsGeometry.fromWkt(wkt2)
+                # if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
+                    # f.setGeometry(geom2)
+                #     writer.addFeature(f)
+                # else:
+                #     print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
             del writer
-            qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
+            # qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
