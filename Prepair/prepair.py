@@ -134,21 +134,21 @@ class Prepair:
             if writer.hasError() != QgsVectorFileWriter.NoError:
                 QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
                 return 1
+            cmd = []
+            if (self.dlg.radioOddEven.isChecked() == False):
+                cmd.append("--setdiff")
+            if (minarea > 0.0):
+                cmd.append("--minarea")
+                cmd.append(str(minarea))
+            cmd.append("--wkt")
+            cmd.append("nothing")
+            if (os.name == 'posix'):
+              exe = 'prepair'
+            else:
+              exe = self.plugin_dir + '\prepair_bin\prepair'
             for f in features:
-                cmd = []
-                cmd.append("--wkt")
-                cmd.append(f.geometry().exportToWkt())
-                if (self.dlg.radioOddEven.isChecked() == False):
-                    cmd.append("--setdiff")
-                if (minarea > 0.0):
-                    cmd.append("--minarea")
-                    cmd.append(str(minarea))
-                if (os.name == 'posix'):
-                  exe = 'prepair'
-                else:
-                  exe = self.plugin_dir + '\prepair_bin\prepair'
+                cmd[-1] = f.geometry().exportToWkt()
                 self.process.start(exe, cmd)
-                self.process.start('prepair', cmd)
                 self.process.waitForFinished()
                 wkt2 = (str(self.process.readAllStandardOutput()).splitlines())[0]
                 geom2 = QgsGeometry.fromWkt(wkt2)
