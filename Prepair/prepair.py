@@ -143,6 +143,11 @@ class Prepair:
                 if (minarea > 0.0):
                     cmd.append("--minarea")
                     cmd.append(str(minarea))
+                if (os.name == 'posix'):
+                  exe = 'prepair'
+                else:
+                  exe = self.plugin_dir + '\prepair_bin\prepair'
+                self.process.start(exe, cmd)
                 self.process.start('prepair', cmd)
                 self.process.waitForFinished()
                 wkt2 = (str(self.process.readAllStandardOutput()).splitlines())[0]
