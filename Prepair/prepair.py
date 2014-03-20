@@ -44,6 +44,8 @@ class Prepair:
         locale = QSettings().value("locale/userLocale")[0:2]
         localePath = os.path.join(self.plugin_dir, 'i18n', 'prepair_{}.qm'.format(locale))
 
+        self.process = QProcess(iface)
+
         if os.path.exists(localePath):
             self.translator = QTranslator()
             self.translator.load(localePath)
@@ -118,7 +120,6 @@ class Prepair:
             except:
                 QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
                 return 1
-
             #-- repair paradigm
             selectedLayer = self.iface.mapCanvas().layer(polyl[self.dlg.comboLayers.currentIndex()][1])
             if (self.dlg.onlySelected.isChecked() == True):
@@ -135,7 +136,6 @@ class Prepair:
                 return 1
             for f in features:
                 cmd = []
-                cmd.append("prepair")
                 cmd.append("--wkt")
                 cmd.append(f.geometry().exportToWkt())
                 if (self.dlg.radioOddEven.isChecked() == False):
@@ -143,14 +143,20 @@ class Prepair:
                 if (minarea > 0.0):
                     cmd.append("--minarea")
                     cmd.append(str(minarea))
-                p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, close_fds=True)
-                wkt2 = p.stdout.read()
-                p.terminate()
+                if (os.name == 'posix'):
+                  exe = 'prepair'
+                else:
+                  exe = self.plugin_dir + '\prepair_bin\prepair'
+                self.process.start(exe, cmd)
+                self.process.start('prepair', cmd)
+                self.process.waitForFinished()
+                wkt2 = (str(self.process.readAllStandardOutput()).splitlines())[0]
                 geom2 = QgsGeometry.fromWkt(wkt2)
                 if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
                     f.setGeometry(geom2)
                     writer.addFeature(f)
                 else:
                     print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
+                self.process.kill()
             del writer
             qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
