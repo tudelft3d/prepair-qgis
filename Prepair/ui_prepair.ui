@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Prepair</string>
+   <string>prepair</string>
   </property>
   <layout class="QFormLayout" name="formLayout">
    <item row="0" column="0">
@@ -37,9 +37,16 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="onlyInvalid">
+       <property name="text">
+        <string>Only Invalid polygons</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
       <string>Algorithm</string>
@@ -65,7 +72,7 @@
      </layout>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="3" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
       <widget class="QLabel" name="label_2">
@@ -83,7 +90,7 @@
      </item>
     </layout>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <widget class="QLabel" name="label">
@@ -115,7 +122,7 @@
      </item>
     </layout>
    </item>
-   <item row="4" column="0">
+   <item row="5" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -128,15 +135,6 @@
   </layout>
   <zorder>buttonBox</zorder>
   <zorder>groupBox</zorder>
-  <zorder>layoutWidget</zorder>
-  <zorder>label</zorder>
-  <zorder>label_2</zorder>
-  <zorder>minarea</zorder>
-  <zorder>comboLayers</zorder>
-  <zorder>label_3</zorder>
-  <zorder>onlySelected</zorder>
-  <zorder>label_2</zorder>
-  <zorder>minarea</zorder>
  </widget>
  <resources/>
  <connections>

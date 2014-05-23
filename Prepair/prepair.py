@@ -128,6 +128,10 @@ class Prepair:
             else:
                 # print "all features"
                 fs = selectedLayer.getFeatures()
+            #-- repair only invalid polygons?
+            bOnlyInvalid = False
+            if (self.dlg.onlyInvalid.isChecked() == True):
+                bOnlyInvalid = True
             invalid = 0
             features = list(fs)
             writer = QgsVectorFileWriter(path, "CP1250", features[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
@@ -147,6 +151,8 @@ class Prepair:
             else:
               exe = self.plugin_dir + '\prepair_bin\prepair'
             for f in features:
+                if ( (bOnlyInvalid == True) and (f.geometry().isGeosValid() == True) ):
+                    continue
                 cmd[-1] = f.geometry().exportToWkt()
                 self.process.start(exe, cmd)
                 self.process.waitForFinished()
