@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui_prepair.ui'
 #
-# Created: Wed Mar  5 16:46:29 2014
+# Created: Fri May 23 11:32:42 2014
 #      by: PyQt4 UI code generator 4.10.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -43,6 +43,9 @@ class Ui_Prepair(object):
         self.onlySelected = QtGui.QCheckBox(Prepair)
         self.onlySelected.setObjectName(_fromUtf8("onlySelected"))
         self.verticalLayout_2.addWidget(self.onlySelected)
+        self.onlyInvalid = QtGui.QCheckBox(Prepair)
+        self.onlyInvalid.setObjectName(_fromUtf8("onlyInvalid"))
+        self.verticalLayout_2.addWidget(self.onlyInvalid)
         self.formLayout.setLayout(0, QtGui.QFormLayout.LabelRole, self.verticalLayout_2)
         self.groupBox = QtGui.QGroupBox(Prepair)
         self.groupBox.setObjectName(_fromUtf8("groupBox"))
@@ -55,7 +58,7 @@ class Ui_Prepair(object):
         self.radioSetdiff = QtGui.QRadioButton(self.groupBox)
         self.radioSetdiff.setObjectName(_fromUtf8("radioSetdiff"))
         self.verticalLayout_3.addWidget(self.radioSetdiff)
-        self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.groupBox)
+        self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.groupBox)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.label_2 = QtGui.QLabel(Prepair)
@@ -64,7 +67,7 @@ class Ui_Prepair(object):
         self.minarea = QtGui.QLineEdit(Prepair)
         self.minarea.setObjectName(_fromUtf8("minarea"))
         self.horizontalLayout_2.addWidget(self.minarea)
-        self.formLayout.setLayout(2, QtGui.QFormLayout.LabelRole, self.horizontalLayout_2)
+        self.formLayout.setLayout(3, QtGui.QFormLayout.LabelRole, self.horizontalLayout_2)
         self.verticalLayout = QtGui.QVBoxLayout()
         self.verticalLayout.setObjectName(_fromUtf8("verticalLayout"))
         self.label = QtGui.QLabel(Prepair)
@@ -81,12 +84,12 @@ class Ui_Prepair(object):
         self.filename.setObjectName(_fromUtf8("filename"))
         self.gridLayout.addWidget(self.filename, 0, 0, 1, 1)
         self.verticalLayout.addLayout(self.gridLayout)
-        self.formLayout.setLayout(3, QtGui.QFormLayout.LabelRole, self.verticalLayout)
+        self.formLayout.setLayout(4, QtGui.QFormLayout.LabelRole, self.verticalLayout)
         self.buttonBox = QtGui.QDialogButtonBox(Prepair)
         self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
         self.buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
         self.buttonBox.setObjectName(_fromUtf8("buttonBox"))
-        self.formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self.buttonBox)
+        self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.buttonBox)
 
         self.retranslateUi(Prepair)
         QtCore.QObject.connect(self.buttonBox, QtCore.SIGNAL(_fromUtf8("accepted()")), Prepair.accept)
@@ -94,9 +97,10 @@ class Ui_Prepair(object):
         QtCore.QMetaObject.connectSlotsByName(Prepair)
 
     def retranslateUi(self, Prepair):
-        Prepair.setWindowTitle(_translate("Prepair", "Prepair", None))
+        Prepair.setWindowTitle(_translate("Prepair", "prepair", None))
         self.label_3.setText(_translate("Prepair", "Input polygon layers:", None))
         self.onlySelected.setText(_translate("Prepair", "Only selected polygons", None))
+        self.onlyInvalid.setText(_translate("Prepair", "Only Invalid polygons", None))
         self.groupBox.setTitle(_translate("Prepair", "Algorithm", None))
         self.radioOddEven.setText(_translate("Prepair", "odd-even", None))
         self.radioSetdiff.setText(_translate("Prepair", "setdiff", None))
