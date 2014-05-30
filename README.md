@@ -1,7 +1,7 @@
 prepair-qgis
 ============
 
-QGIS v2.x plugin for [prepair](https://github.com/tudelft-gist/prepair).
+QGIS v2.x plugin for [prepair](https://github.com/tudelft-gist/prepair). The binary of prepair must be installed on your system---we offer Windows binaries at https://github.com/tudelft-gist/prepair, and makefile to easily compile binaries for Mac/Linux.
 
 It permits you to automatically repair single polygons. Simply select one vector layer (containing polygons), and launch the plugin. You can then decide to repair only the selected polygons, or only those invalid. Using a valid polygon will mean that its geometry might be changed (e.g. the first point in a ring could be a different one).
 
