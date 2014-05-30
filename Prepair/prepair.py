@@ -24,6 +24,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import *
 import qgis
+from qgis.gui import QgsMessageBar
 # Initialize Qt resources from file resources.py
 import resources_rc
 # Import the code for the dialog
@@ -68,15 +69,26 @@ class Prepair:
         # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
         self.iface.addPluginToMenu(u"&prepair", self.action)
+        # Help menu
+        self.helpAction = QAction("help", self.iface.mainWindow())
+        self.helpAction.triggered.connect(self.help)
+        self.iface.addPluginToMenu(u"&prepair", self.helpAction)
+
+        self.dlg.prepairPath.setText(QSettings().value("prepair/prepairpath"))
+        self.dlg.filename.setText(QSettings().value("prepair/lastfilename"))
 
     def unload(self):
         # Remove the plugin menu item and icon
         self.iface.removePluginMenu(u"&prepair", self.action)
+        self.iface.removePluginMenu(u"&prepair", self.helpAction)
         self.iface.removeToolBarIcon(self.action)
 
     def verifypath(self, path):
         dirname = os.path.dirname(path)
         return os.path.exists(dirname)
+
+    def help(self):
+        QDesktopServices().openUrl(QUrl("https://github.com/tudelft-gist/prepair-qgis/wiki/Help-for-the-prepair-QGIS-plugin"))
 
     def run(self):
         self.dlg.show()
@@ -134,6 +146,10 @@ class Prepair:
                 bOnlyInvalid = True
             invalid = 0
             features = list(fs)
+            #-- if no features then stop this
+            if len(features) == 0:
+                QMessageBox.critical(mw, "prepair", "No features selected.")
+                return 1
             writer = QgsVectorFileWriter(path, "CP1250", features[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
             if writer.hasError() != QgsVectorFileWriter.NoError:
                 QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
@@ -146,10 +162,15 @@ class Prepair:
                 cmd.append(str(minarea))
             cmd.append("--wkt")
             cmd.append("nothing")
-            if (os.name == 'posix'):
-              exe = 'prepair'
-            else:
-              exe = self.plugin_dir + '\prepair_bin\prepair'
+            
+            exe = self.dlg.prepairPath.text()
+            if (exe == ''):
+                QMessageBox.critical(mw, "prepair", "The path for the prepair executable must be set.")
+                return 1
+            QSettings().setValue("prepair/prepairpath", exe)
+            QSettings().setValue("prepair/lastfilename", path)
+
+            
             for f in features:
                 if ( (bOnlyInvalid == True) and (f.geometry().isGeosValid() == True) ):
                     continue

@@ -34,9 +34,15 @@ class PrepairDialog(QtGui.QDialog, Ui_Prepair):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
-        QtCore.QObject.connect(self.browseOutfile, QtCore.SIGNAL("clicked()"), self.browse_outfile)
+        QtCore.QObject.connect(self.browseOutfile,     QtCore.SIGNAL("clicked()"), self.browse_outfile)
+        QtCore.QObject.connect(self.browsePrepairPath, QtCore.SIGNAL("clicked()"), self.browse_prepairpath)
 
     def browse_outfile(self):
-        newname = QtGui.QFileDialog.getSaveFileName(self, "Output Shapefile", "/Users/hugo/", "Shapefile (*.shp)")
+        newname = QtGui.QFileDialog.getSaveFileName(self, "Output Shapefile", "", "Shapefile (*.shp)")
         if newname != None:
             self.filename.setText(newname)
+
+    def browse_prepairpath(self):
+        newname = QtGui.QFileDialog.getOpenFileName(self, "", "", "")
+        if newname != None:
+            self.prepairPath.setText(newname)
