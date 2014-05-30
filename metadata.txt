@@ -27,7 +27,7 @@ email=h.ledoux@tudelft.nl
 tags=
 
 homepage=https://github.com/tudelft-gist/prepair-qgis/wiki
-tracker=
+tracker=https://github.com/tudelft-gist/prepair-qgis/issues
 repository=https://github.com/tudelft-gist/prepair-qgis
 icon=icon.png
 # experimental flag
