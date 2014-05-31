@@ -13,7 +13,7 @@ name=prepair
 qgisMinimumVersion=2.0
 description=Automatic repair of polygons (according to ISO19107). 
 about=The prepair binary is necessary (can be downloaded at https://github.com/tudelft-gist/prepair).
-version=0.5
+version=0.5.1
 author=GIS technology group at TU Delft
 email=h.ledoux@tudelft.nl
 

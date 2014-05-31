@@ -1,7 +1,5 @@
 *.py[cod]
 
-ui_*.py, 
-resources_rc.py
 
 # C extensions
 *.so
