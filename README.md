@@ -9,8 +9,8 @@ A new layer with the input polygon is created (always a shape file). Each input 
 
 Automated repair methods can be considered as interpreting ambiguous or ill-defined polygons and giving a coherent and clearly defined output. Examples of errors are: polygon has a dangling edge; polygon is not closed; polygon self-intersects; an inner ring of the polygon is located outside the outer ring; etc. We offer two repair paradigms:
 
-	1. odd-even: an extension of the odd-even algorithm to handle GIS polygons containing inner rings and degeneracies; 
-    2. setdiff: we follow a set difference rule for the rings.
+  1. odd-even: an extension of the odd-even algorithm to handle GIS polygons containing inner rings and degeneracies; 
+  2. setdiff: we follow a set difference rule for the rings.
 
 
 
