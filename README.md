@@ -16,6 +16,6 @@ Install it directly from the QGIS repository within QGIS (menu "Plugins/Manage a
 
 To run it, you must also have the binary of prepair installed on your system.
 
-__Windows/Mac__: download the 64-bit [Windows](https://github.com/tudelft-gist/prepair/releases/download/v0.7/prepair_win64.zip) or [Mac](https://github.com/tudelft-gist/prepair/releases/download/v0.7/prepair_mac.zip) binaries and unzip to any location (eg creating the folder 'C:\prepair_win64\'). The first time the plugin is used, select 'C:\prepair_win64\prepair.exe' for the 'prepair executable path' at the bottom of the prepair plugin window. The Mac binaries require Kyngchaos' [GDAL Complete Framework](http://www.kyngchaos.com/software/frameworks#gdal_complete).
+__Windows/Mac binaries__: download the 64-bit [Windows](https://github.com/tudelft-gist/prepair/releases/download/v0.7/prepair_win64.zip) or [Mac](https://github.com/tudelft-gist/prepair/releases/download/v0.7/prepair_mac.zip) binaries and unzip to any location (eg creating the folder 'C:\prepair_win64\'). The first time the plugin is used, select 'C:\prepair_win64\prepair.exe' for the 'prepair executable path' at the bottom of the prepair plugin window. The Mac binaries require Kyngchaos' [GDAL 1.11 Complete Framework](http://www.kyngchaos.com/software/frameworks#gdal_complete).
 
 __From source__: installing from source is easy under Mac and Linux using the included CMake file.
