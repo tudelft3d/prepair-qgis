@@ -39,10 +39,10 @@ class PrepairDialog(QtGui.QDialog, Ui_Prepair):
 
     def browse_outfile(self):
         newname = QtGui.QFileDialog.getSaveFileName(self, "Output Shapefile", "", "Shapefile (*.shp)")
-        if newname != None:
+        if newname != "":
             self.filename.setText(newname)
 
     def browse_prepairpath(self):
         newname = QtGui.QFileDialog.getOpenFileName(self, "", "", "")
-        if newname != None:
+        if newname != "":
             self.prepairPath.setText(newname)
