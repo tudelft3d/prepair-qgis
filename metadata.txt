@@ -12,8 +12,8 @@
 name=prepair
 qgisMinimumVersion=2.0
 description=Automatic repair of polygons (according to ISO19107). 
-about=The prepair binary is necessary (can be downloaded at https://github.com/tudelft-gist/prepair).
-version=0.5.2
+about=The prepair binary is necessary (can be downloaded at https://github.com/tudelft-gist/prepair/releases).
+version=0.5.3
 author=GIS technology group at TU Delft
 email=h.ledoux@tudelft.nl
 
@@ -32,7 +32,7 @@ tracker=https://github.com/tudelft-gist/prepair-qgis/issues
 repository=https://github.com/tudelft-gist/prepair-qgis
 icon=icon.png
 # experimental flag
-experimental=False
+experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version
 deprecated=False
