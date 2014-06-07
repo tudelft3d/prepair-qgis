@@ -62,25 +62,25 @@ class Prepair:
         # Create action that will start plugin configuration
         self.action = QAction(
             QIcon(":/plugins/prepair/icon.png"),
-            u"prepair", self.iface.mainWindow())
+            u"prepair", self.iface.vectorMenu())
         # connect the action to the run method
         self.action.triggered.connect(self.run)
 
         # Add toolbar button and menu item
         self.iface.addToolBarIcon(self.action)
-        self.iface.addPluginToMenu(u"&prepair", self.action)
+        self.iface.addPluginToVectorMenu(u"&prepair", self.action)
         # Help menu
         self.helpAction = QAction("help", self.iface.mainWindow())
         self.helpAction.triggered.connect(self.help)
-        self.iface.addPluginToMenu(u"&prepair", self.helpAction)
+        self.iface.addPluginToVectorMenu(u"&prepair", self.helpAction)
 
         self.dlg.prepairPath.setText(QSettings().value("prepair/prepairpath"))
         self.dlg.filename.setText(QSettings().value("prepair/lastfilename"))
 
     def unload(self):
         # Remove the plugin menu item and icon
-        self.iface.removePluginMenu(u"&prepair", self.action)
-        self.iface.removePluginMenu(u"&prepair", self.helpAction)
+        self.iface.removePluginVectorMenu(u"&prepair", self.action)
+        self.iface.removePluginVectorMenu(u"&prepair", self.helpAction)
         self.iface.removeToolBarIcon(self.action)
 
     def verifypath(self, path):
@@ -88,7 +88,7 @@ class Prepair:
         return os.path.exists(dirname)
 
     def help(self):
-        QDesktopServices().openUrl(QUrl("https://github.com/tudelft-gist/prepair-qgis/wiki/Help-for-the-prepair-QGIS-plugin"))
+        QDesktopServices().openUrl(QUrl("https://github.com/tudelft-gist/prepair-qgis/blob/master/README.md"))
 
     def run(self):
         self.dlg.show()
@@ -115,7 +115,6 @@ class Prepair:
             mw = self.iface.mainWindow()
             path = self.dlg.filename.text()
             #-- get selected layer by the user
-            # print "selected layer", polyl[self.dlg.comboLayers.currentIndex()]
             if (self.dlg.comboLayers.currentIndex() == -1):
                 QMessageBox.critical(mw, "prepair", "No layer selected.")
                 return 1
@@ -177,7 +176,11 @@ class Prepair:
                 cmd[-1] = f.geometry().exportToWkt()
                 self.process.start(exe, cmd)
                 self.process.waitForFinished()
-                wkt2 = (str(self.process.readAllStandardOutput()).splitlines())[0]
+                t = str(self.process.readAllStandardOutput())
+                if t == "":
+                    QMessageBox.critical(mw, "prepair", "Problem with prepair executable, make sure it is working properly.")
+                    return 1
+                wkt2 = t.splitlines()[0]
                 geom2 = QgsGeometry.fromWkt(wkt2)
                 if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
                     f.setGeometry(geom2)
