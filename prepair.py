@@ -33,6 +33,8 @@ import os.path
 import os
 import subprocess
 
+MAXSIZE = 75000
+
 
 class Prepair:
 
@@ -170,7 +172,10 @@ class Prepair:
             QSettings().setValue("prepair/lastfilename", path)
 
             for f in features:
-                print f
+                print "Feature #", int(f.id())
+                if (f.geometry().wkbSize() > MAXSIZE):
+                    QMessageBox.critical(mw, "prepair", "Feature #%d too large (max %d), no attempt to repair." % (f.id(), MAXSIZE))
+                    continue
                 err = list(f.geometry().validateGeometry())
                 # print "---validateGeometry()", len(err)
                 if ( (bOnlyInvalid == True) and (len(err) == 0) ):
@@ -180,8 +185,8 @@ class Prepair:
                 self.process.waitForFinished()
                 t = str(self.process.readAllStandardOutput())
                 if t == "":
-                    QMessageBox.critical(mw, "prepair", "Problem with prepair executable, make sure it is working properly.")
-                    return 1
+                    QMessageBox.critical(mw, "prepair", "Problem feature #%d, not repaired." % (f.id()))
+                    continue
                 wkt2 = t.splitlines()[0]
                 geom2 = QgsGeometry.fromWkt(wkt2)
                 if (geom2 != None) and (geom2.isGeosEmpty() == False): #-- do not add to layer if repaired is emtpy
