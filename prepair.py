@@ -33,7 +33,8 @@ import os.path
 import os
 import subprocess
 
-MAXSIZE = 75000
+MAXSIZE = 10000
+
 
 
 class Prepair:
@@ -58,6 +59,7 @@ class Prepair:
 
         # Create the dialog (after translation) and keep reference
         self.dlg = PrepairDialog()
+        self.tmpwkt = os.path.join(self.plugin_dir,'tmp.wkt')
 
 
     def initGui(self):
@@ -173,14 +175,20 @@ class Prepair:
 
             for f in features:
                 print "Feature #", int(f.id())
-                if (f.geometry().wkbSize() > MAXSIZE):
-                    QMessageBox.critical(mw, "prepair", "Feature #%d too large (max %d), no attempt to repair." % (f.id(), MAXSIZE))
-                    continue
                 err = list(f.geometry().validateGeometry())
-                # print "---validateGeometry()", len(err)
                 if ( (bOnlyInvalid == True) and (len(err) == 0) ):
                     continue
-                cmd[-1] = f.geometry().exportToWkt()
+
+                if (f.geometry().wkbSize() > MAXSIZE):
+                    print "*** large polygon"
+                    tmpf = open(self.tmpwkt, 'w')
+                    tmpf.write(f.geometry().exportToWkt())
+                    tmpf.close()
+                    cmd[-2] = '-f'
+                    cmd[-1] = self.tmpwkt
+                else:
+                    cmd[-2] = '--wkt'
+                    cmd[-1] = f.geometry().exportToWkt()
                 self.process.start(exe, cmd)
                 self.process.waitForFinished()
                 t = str(self.process.readAllStandardOutput())
@@ -196,4 +204,6 @@ class Prepair:
                     print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
                 self.process.kill()
             del writer
+            if (os.path.exists(self.tmpwkt)):
+                os.remove(self.tmpwkt)
             qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
