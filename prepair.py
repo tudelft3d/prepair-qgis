@@ -169,9 +169,11 @@ class Prepair:
             QSettings().setValue("prepair/prepairpath", exe)
             QSettings().setValue("prepair/lastfilename", path)
 
-            
             for f in features:
-                if ( (bOnlyInvalid == True) and (f.geometry().isGeosValid() == True) ):
+                print f
+                err = list(f.geometry().validateGeometry())
+                # print "---validateGeometry()", len(err)
+                if ( (bOnlyInvalid == True) and (len(err) == 0) ):
                     continue
                 cmd[-1] = f.geometry().exportToWkt()
                 self.process.start(exe, cmd)
