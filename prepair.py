@@ -25,6 +25,7 @@ from PyQt4.QtGui import *
 from qgis.core import *
 import qgis
 from qgis.gui import QgsMessageBar
+from PyQt4.QtGui import QProgressBar
 # Initialize Qt resources from file resources.py
 import resources_rc
 # Import the code for the dialog
@@ -49,6 +50,8 @@ class Prepair:
         localePath = os.path.join(self.plugin_dir, 'i18n', 'prepair_{}.qm'.format(locale))
 
         self.process = QProcess(iface)
+        self.tmpwkt = os.path.join(self.plugin_dir,'tmp.wkt')
+        # self.progressbar = self.iface.messageBar().createMessage("prepair progress")
 
         if os.path.exists(localePath):
             self.translator = QTranslator()
@@ -59,7 +62,6 @@ class Prepair:
 
         # Create the dialog (after translation) and keep reference
         self.dlg = PrepairDialog()
-        self.tmpwkt = os.path.join(self.plugin_dir,'tmp.wkt')
 
 
     def initGui(self):
@@ -130,18 +132,19 @@ class Prepair:
             try:
                 minarea = float(self.dlg.minarea.text())
                 if (minarea < 0.0):
-                    QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
+                    # QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
+                    self.iface.messageBar().pushMessage("prepair", \
+                      "Minimum area must be a positive number", level=QgsMessageBar.CRITICAL)
                     return 1
             except:
-                QMessageBox.critical(mw, "prepair", "Minimum area must be a positive number")
+                self.iface.messageBar().pushMessage("prepair", \
+                  "Minimum area must be a positive number", level=QgsMessageBar.CRITICAL)
                 return 1
             #-- repair paradigm
             selectedLayer = self.iface.mapCanvas().layer(polyl[self.dlg.comboLayers.currentIndex()][1])
             if (self.dlg.onlySelected.isChecked() == True):
-                # print "only selected"
                 fs = selectedLayer.selectedFeatures()
             else:
-                # print "all features"
                 fs = selectedLayer.getFeatures()
             #-- repair only invalid polygons?
             bOnlyInvalid = False
@@ -155,7 +158,8 @@ class Prepair:
                 return 1
             writer = QgsVectorFileWriter(path, "CP1250", features[0].fields(), QGis.WKBPolygon, None, "ESRI Shapefile")
             if writer.hasError() != QgsVectorFileWriter.NoError:
-                QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
+                # QMessageBox.critical(mw, "prepair", "Error when creating shapefile:")
+                self.iface.messageBar().pushMessage("prepair", "error when creating the shapefile", level=QgsMessageBar.CRITICAL)
                 return 1
             cmd = []
             if (self.dlg.radioOddEven.isChecked() == False):
@@ -173,8 +177,21 @@ class Prepair:
             QSettings().setValue("prepair/prepairpath", exe)
             QSettings().setValue("prepair/lastfilename", path)
 
-            for f in features:
+            #-- setup a progressbar
+            progressbar = self.iface.messageBar().createMessage("prepair progress")
+            progress = QProgressBar()
+            progress.setMaximum(100)
+            progress.setAlignment(Qt.AlignLeft|Qt.AlignVCenter)
+            progressbar.layout().addWidget(progress)
+            self.iface.messageBar().pushWidget(progressbar, self.iface.messageBar().INFO)
+
+            totalfs = len(features)
+            for i,f in enumerate(features):
                 print "Feature #", int(f.id())
+                progress.setValue(i/float(totalfs)*100)
+                # self.iface.mainWindow().statusBar().showMessage("prepair: processed {} %".format(int(i/float(totalfs)*100)))
+                # self.iface.messageBar().pushMessage("prepair", "processed {} %".format(int(i/float(totalfs)*100)), duration=2)
+                # self.iface.mainWindow().statusBar().showMessage("roger moquin")
                 err = list(f.geometry().validateGeometry())
                 if ( (bOnlyInvalid == True) and (len(err) == 0) ):
                     continue
@@ -193,7 +210,7 @@ class Prepair:
                 self.process.waitForFinished()
                 t = str(self.process.readAllStandardOutput())
                 if t == "":
-                    QMessageBox.critical(mw, "prepair", "Problem feature #%d, not repaired." % (f.id()))
+                    self.iface.messageBar().pushMessage("prepair", "Problem feature #%d, not repaired." % (f.id()), level=QgsMessageBar.WARNING)
                     continue
                 wkt2 = t.splitlines()[0]
                 geom2 = QgsGeometry.fromWkt(wkt2)
@@ -201,9 +218,14 @@ class Prepair:
                     f.setGeometry(geom2)
                     writer.addFeature(f)
                 else:
-                    print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
+                    # print "WARNING: empty geometry, feature", f.id(), "not added to new layer."
+                    self.iface.messageBar().pushMessage("prepair", "repaired feature #%d has an empty geometry, skipping." % (f.id()),\
+                      level=QgsMessageBar.WARNING)
                 self.process.kill()
             del writer
             if (os.path.exists(self.tmpwkt)):
                 os.remove(self.tmpwkt)
+            self.iface.messageBar().clearWidgets()
+            self.iface.messageBar().pushMessage("prepair", "Features repaired.", \
+              level=QgsMessageBar.INFO, duration=5)
             qgis.utils.iface.addVectorLayer(path, os.path.basename(path), "ogr")
